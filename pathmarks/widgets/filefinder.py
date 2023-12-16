@@ -1,6 +1,8 @@
-import magic
+"""The FileFinder widget for selecting logfiles to view."""
+
 from pathlib import Path
 from typing import Iterable
+import magic
 
 from textual.app import App, ComposeResult
 from textual.containers import Vertical, Horizontal
@@ -46,14 +48,36 @@ class FileFinder(Widget):
     }
     """
 
+    def validate_path(self, path: str) -> bool:
+        """Is the path acceptable for the directory tree?"""
+        try:
+            magic.from_file(path, mime=True)
+            # If the above did not cause an exception, it is not a directory.
+            self.notify("This path is not a directory.")
+            return False
+        except IsADirectoryError:
+            # This means a valid path.
+            return True
+        except FileNotFoundError:
+            self.notify("This path does not appear to exist.")
+            return False
+
+    def change_path(self) -> None:
+        """Update the _FilteredDirectoryTree widget or display an error."""
+        path_input = self.query_one("#path_input")
+        if not self.validate_path(path_input.value):
+            path_input.value = ""
+            return
+        self.query_one("#ff_tree").path = path_input.value
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Event handler for the 'Go' button in the input row."""
         if event.button.id == "go_btn":
-            self.query_one("#ff_tree").path = self.query_one("#path_input").value
+            self.change_path()
 
-    def on_input_submitted(self, event: Input.Submitted) -> None:
+    def on_input_submitted(self) -> None:
         """Event handler for the path input."""
-        self.query_one("#ff_tree").path = event.value
+        self.change_path()
 
     def compose(self) -> ComposeResult:
         """Return the widgets that make up the FileFinder."""
