@@ -46,14 +46,25 @@ class FileFinder(Widget):
     }
     """
 
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Event handler for the 'Go' button in the input row."""
+        if event.button.id == "go_btn":
+            self.query_one("#ff_tree").path = self.query_one("#path_input").value
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Event handler for the path input."""
+        self.query_one("#ff_tree").path = event.value
+
     def compose(self) -> ComposeResult:
         """Return the widgets that make up the FileFinder."""
         with Vertical():
             with Horizontal(classes="ff_input_row"):
-                yield Input(placeholder="/var/log", classes="ff_text_input")
-                yield Button("Go", classes="ff_button")
+                yield Input(
+                    id="path_input", placeholder="/var/log", classes="ff_text_input"
+                )
+                yield Button("Go", id="go_btn", classes="ff_button", variant="primary")
             with Vertical():
-                yield _FilteredDirectoryTree("/")
+                yield _FilteredDirectoryTree("/", id="ff_tree")
 
 
 class DebugApp(App):
