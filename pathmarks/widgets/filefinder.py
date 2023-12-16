@@ -3,8 +3,9 @@ from pathlib import Path
 from typing import Iterable
 
 from textual.app import App, ComposeResult
+from textual.containers import Vertical, Horizontal
 from textual.widget import Widget
-from textual.widgets import DirectoryTree
+from textual.widgets import DirectoryTree, Input, Button
 
 
 class _FilteredDirectoryTree(DirectoryTree):
@@ -29,9 +30,30 @@ class _FilteredDirectoryTree(DirectoryTree):
 class FileFinder(Widget):
     """An enhanced DirectoryTree widget to support typing and selection."""
 
+    DEFAULT_CSS = """
+    .ff_input_row {
+        height: 5;
+        padding-top: 1;
+        padding-bottom: 1;
+    }
+
+    .ff_text_input {
+        width: 3fr;
+    }
+
+    .ff_button {
+        width: 1fr;
+    }
+    """
+
     def compose(self) -> ComposeResult:
         """Return the widgets that make up the FileFinder."""
-        yield _FilteredDirectoryTree("/")
+        with Vertical():
+            with Horizontal(classes="ff_input_row"):
+                yield Input(placeholder="/var/log", classes="ff_text_input")
+                yield Button("Go", classes="ff_button")
+            with Vertical():
+                yield _FilteredDirectoryTree("/")
 
 
 class DebugApp(App):
