@@ -1,16 +1,30 @@
 """The app entrypoint."""
 
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer
+from textual.containers import Horizontal
+
+from pathmarks.widgets.viewpane import ViewPane
+from pathmarks.widgets.filefinder import FileFinder
 
 
 class PathmarksApp(App):
     """A Textual app for viewing/searching logfiles."""
 
+    DEFAULT_CSS = """
+    .widget_filefinder {
+        width: 25%;
+    }
+
+    .widget_viewpane {
+        width: 75%;
+    }
+    """
+
     def compose(self) -> ComposeResult:
         """Create the app widgets."""
-        yield Header()
-        yield Footer()
+        with Horizontal():
+            yield FileFinder(classes="widget_filefinder")
+            yield ViewPane(classes="widget_viewpane")
 
 
 def start():
