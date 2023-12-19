@@ -2,7 +2,8 @@
 
 from pathlib import Path
 from typing import Iterable
-import magic
+import os
+import mimetypes
 
 from textual.app import App, ComposeResult
 from textual.containers import Vertical, Horizontal
@@ -16,13 +17,12 @@ class _FilteredDirectoryTree(DirectoryTree):
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         """Filter out non-text files."""
         result = []
-        m = magic.Magic(mime=True)
         for path in paths:
             try:
                 if path.is_dir():
                     result.append(path)
 
-                if path.is_file() and m.from_file(path) == "text/plain":
+                if path.is_file() and mimetypes.guess_type(path)[0] == "text/plain":
                     result.append(path)
             except PermissionError:
                 continue
@@ -50,17 +50,15 @@ class FileFinder(Widget):
 
     def validate_path(self, path: str) -> bool:
         """Is the path acceptable for the directory tree?"""
-        try:
-            magic.from_file(path, mime=True)
-            # If the above did not cause an exception, it is not a directory.
-            self.notify("This path is not a directory.")
-            return False
-        except IsADirectoryError:
-            # This means a valid path.
-            return True
-        except FileNotFoundError:
+        if not os.path.exists(path):
             self.notify("This path does not appear to exist.")
             return False
+
+        if not os.path.isdir(path):
+            self.notify("This path is not a directory.")
+            return False
+
+        return True
 
     def change_path(self) -> None:
         """Update the _FilteredDirectoryTree widget or display an error."""
