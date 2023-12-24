@@ -22,7 +22,10 @@ class _FilteredDirectoryTree(DirectoryTree):
                 if path.is_dir():
                     result.append(path)
 
-                if path.is_file() and mimetypes.guess_type(path)[0] == "text/plain":
+                if path.is_file() and mimetypes.guess_type(path)[0] in [
+                    "text/plain",
+                    "ASCII text",
+                ]:
                     result.append(path)
             except PermissionError:
                 continue
