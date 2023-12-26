@@ -46,6 +46,25 @@ class TestParser:
         # Lines not containing a match are not returned:
         assert "bleary" not in parser.filter_content_basic("applesauce")
 
+    def test_filter_content_regex(self, multiline_file_content):
+        """Assert that we can retrieve only lines matching a given regular expression"""
+
+        parser = Parser("no-file")
+        parser.raw_content = multiline_file_content
+        parser.content_lines = parser.raw_content.splitlines()
+
+        # Search term is not present in the results at all:
+        assert "Lorem ipsum" not in parser.filter_content_regex("not-present")
+
+        # Exact match is found:
+        assert "applesauce" in parser.filter_content_regex(".*applesauce*")
+
+        # # Match is case-insensitive:
+        assert "applesauce" in parser.filter_content_regex(".*appleSAUCE*")
+
+        # Lines not containing a match are not returned:
+        assert "bleary" not in parser.filter_content_regex(".*applesauce*")
+
     @pytest.fixture
     def simple_text_file_content(self):
         """Fixture content for a simple text file."""

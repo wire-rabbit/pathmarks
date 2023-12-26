@@ -3,10 +3,10 @@
 from rich.errors import MarkupError
 from textual import work
 from textual.app import App, ComposeResult
-from textual.containers import Vertical
+from textual.containers import Vertical, Horizontal
 from textual.reactive import reactive
 from textual.widget import Widget
-from textual.widgets import Input, RichLog, LoadingIndicator
+from textual.widgets import Input, RichLog, LoadingIndicator, RadioButton, RadioSet
 
 from pathmarks.parser.parser import Parser
 
@@ -15,16 +15,23 @@ class ViewPane(Widget):
     """Augmented log viewer with search controls."""
 
     DEFAULT_CSS = """
-    .input_row {
+    .vp_search_pattern_row {
+        margin-top: 1;
         height: 5;
-        padding-top: 1;
-        padding-bottom: 1;
+    }
+    #vp_search_pattern {
+        width: 3fr;
+    }
+    #vp_search_type {
+        width: 1fr;
     }
     """
 
     parser: Parser = None
 
     rich_log: RichLog = None
+
+    regex_search: bool = False
 
     loading_indicator: LoadingIndicator = None
 
@@ -65,7 +72,18 @@ class ViewPane(Widget):
         if self.parser.raw_content == "":
             self.notify("No content to search.")
             return
-        self.write_log_content(self.parser.filter_content_basic(event.value))
+
+        if self.regex_search:
+            self.write_log_content(self.parser.filter_content_regex(event.value))
+        else:
+            self.write_log_content(self.parser.filter_content_basic(event.value))
+
+    def on_radio_set_changed(self, event: RadioSet.Changed) -> None:
+        """Handle a change in the search pattern type."""
+        if event.index == 1:
+            self.regex_search = True
+        else:
+            self.regex_search = False
 
     def compose(self) -> ComposeResult:
         """Return the widgets that make up the ViewPane."""
@@ -75,9 +93,15 @@ class ViewPane(Widget):
         self.loading_indicator.display = False
 
         with Vertical():
-            yield Input(
-                id="search_pattern", classes="input_row", placeholder="(search pattern)"
-            )
+            with Horizontal(classes="vp_search_pattern_row"):
+                yield Input(
+                    id="vp_search_pattern",
+                    classes="vp_input",
+                    placeholder="(search pattern)",
+                )
+                with RadioSet(id="vp_search_type"):
+                    yield RadioButton("Simple", value=True)
+                    yield RadioButton("Regex")
             yield self.rich_log
             yield self.loading_indicator
 

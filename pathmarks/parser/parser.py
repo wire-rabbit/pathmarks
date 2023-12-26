@@ -71,11 +71,11 @@ class Parser:
     def filter_content_regex(self, pattern: str) -> str:
         """Return lines from raw content that match the supplied pattern."""
         try:
-            regexp = re.compile(pattern)
+            regexp = re.compile(pattern, re.I)
 
             subset = []
             for line in self.content_lines:
-                if regexp.match(pattern, line):
+                if regexp.match(line):
                     subset.append(line)
 
         except re.error:
