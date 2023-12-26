@@ -1,12 +1,14 @@
 """The ViewPane widget for interacting with logfile contents."""
 
-from pathmarks.parser.parser import Parser
-
+from rich.errors import MarkupError
+from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widget import Widget
-from textual.widgets import Input, RichLog
+from textual.widgets import Input, RichLog, LoadingIndicator
+
+from pathmarks.parser.parser import Parser
 
 
 class ViewPane(Widget):
@@ -20,20 +22,34 @@ class ViewPane(Widget):
     }
     """
 
+    parser: Parser = None
+
     rich_log: RichLog = None
+
+    loading_indicator: LoadingIndicator = None
 
     logfile_path: reactive[str | None] = reactive("")
 
     search_pattern: str = ""
 
-    def watch_logfile_path(self) -> None:
-        """Respond to changes in the selected logfile path."""
+    def write_log_content(self, content):
+        """Write the rich log contenet, handling errors."""
+        self.rich_log.clear()
+        try:
+            self.rich_log.write(content)
+        except MarkupError:
+            self.rich_log.markup = False
+            self.rich_log.write(content)
 
-        # For now just write the logfile path. We're just getting wired up.
+    @work
+    async def watch_logfile_path(self) -> None:
+        """Respond to changes in the selected logfile path."""
         self.rich_log.clear()
 
-        parser = Parser(self.logfile_path)
-        content, err = parser.load_content()
+        self.loading_indicator.display = True
+
+        self.parser = Parser(self.logfile_path)
+        content, err = await self.parser.load_content()
         if err != "":
             self.notify(f"Error loading file: {err}")
             return
@@ -41,23 +57,29 @@ class ViewPane(Widget):
         if content == "" and self.logfile_path != "":
             self.notify("Empty file.")
 
-        self.rich_log.write(content)
+        self.write_log_content(content)
+        self.loading_indicator.display = False
 
-    def get_logfile_content(self) -> str:
-        """Get the filtered content of a given logfile."""
-        return self.logfile_path
+    def on_input_changed(self, event) -> None:
+        """Handle a change in the search pattern input."""
+        if self.parser.raw_content == "":
+            self.notify("No content to search.")
+            return
+        self.write_log_content(self.parser.filter_content_basic(event.value))
 
     def compose(self) -> ComposeResult:
         """Return the widgets that make up the ViewPane."""
 
-        self.rich_log = RichLog(id="log_view", highlight=True, markup=True)
-        self.rich_log.write(self.get_logfile_content())
+        self.rich_log = RichLog(id="log_view", highlight=True, markup=False)
+        self.loading_indicator = LoadingIndicator(id="loading_indicator")
+        self.loading_indicator.display = False
 
         with Vertical():
             yield Input(
                 id="search_pattern", classes="input_row", placeholder="(search pattern)"
             )
             yield self.rich_log
+            yield self.loading_indicator
 
 
 class DebugApp(App):
