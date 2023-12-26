@@ -1,5 +1,7 @@
 """The ViewPane widget for interacting with logfile contents."""
 
+from pathmarks.parser.parser import Parser
+
 from textual.app import App, ComposeResult
 from textual.containers import Vertical
 from textual.reactive import reactive
@@ -29,7 +31,17 @@ class ViewPane(Widget):
 
         # For now just write the logfile path. We're just getting wired up.
         self.rich_log.clear()
-        self.rich_log.write(self.logfile_path)
+
+        parser = Parser(self.logfile_path)
+        content, err = parser.load_content()
+        if err != "":
+            self.notify(f"Error loading file: {err}")
+            return
+
+        if content == "" and self.logfile_path != "":
+            self.notify("Empty file.")
+
+        self.rich_log.write(content)
 
     def get_logfile_content(self) -> str:
         """Get the filtered content of a given logfile."""
