@@ -55,13 +55,14 @@ class Parser:
         return "\n".join(self.content_lines)
 
     def filter_content_basic(self, s: str) -> str:
-        """Return lines from raw content that contain the supplied substring."""
+        """Return lines from raw content that contain the supplied substring.
+        Case-insensitive."""
         if s == "":
             return self.get_reset_content()
 
         subset = []
         for line in self.content_lines:
-            if s in line:
+            if s.lower() in line.lower():
                 subset.append(line)
 
         self.current_subset = subset

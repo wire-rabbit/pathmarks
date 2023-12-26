@@ -1,5 +1,4 @@
 """Testing the logfile Parser."""
-import asyncio
 import pytest
 
 from pathmarks.parser.parser import Parser
@@ -35,7 +34,17 @@ class TestParser:
         parser.raw_content = multiline_file_content
         parser.content_lines = parser.raw_content.splitlines()
 
+        # Search term is not present in the results at all:
         assert "Lorem ipsum" not in parser.filter_content_basic("not-present")
+
+        # Exact match is found:
+        assert "applesauce" in parser.filter_content_basic("applesauce")
+
+        # Match is case-insensitive:
+        assert "applesauce" in parser.filter_content_basic("appleSAUCE")
+
+        # Lines not containing a match are not returned:
+        assert "bleary" not in parser.filter_content_basic("applesauce")
 
     @pytest.fixture
     def simple_text_file_content(self):
@@ -46,17 +55,7 @@ class TestParser:
     def multiline_file_content(self):
         """Fixture content for unstructured multi-line content."""
         return """
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Etiam finibus, est non gravida bibendum, augue ipsum 
-        consectetur nisl, interdum facilisis est tortor non magna. 
-        Integer ante nunc, viverra nec massa non, pharetra scelerisque 
-        nisl. 
-
-        Praesent convallis viverra turpis, quis interdum urna varius
-        ultricies. Nunc et tincidunt nunc. Sed rhoncus nibh erat, vel
-        maximus lacus rutrum egestas. Nam sed fringilla nunc. Ut 
-        pellentesque, ante sed aliquet accumsan, odio urna posuere
-        diam, nec vehicula dui sapien non lacus. Donec efficitur odio
-        arcu, vel facilisis orci congue at. Quisque sollicitudin elit 
-        nunc, vel tincidunt magna vulputate sed.
+        1. Applesauce cranberry excursion 10 marbles.
+        2. bleary Nuisance sawdust 99 nettles.
+        3. cranberry applesauce leading _?! leastaways.
         """
