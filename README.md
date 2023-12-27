@@ -5,6 +5,9 @@ A log viewer built on [Textualize](https://www.textualize.io) with a file explor
 Packaged with [Poetry](https://python-poetry.org).
 
 ```bash
+# To download dependencies:
+poetry install
+
 # To run:
 poetry run pathmarks
 
