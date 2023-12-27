@@ -3,7 +3,7 @@
 from pathlib import Path
 from typing import Iterable
 import os
-import mimetypes
+import subprocess
 
 from textual.app import App, ComposeResult
 from textual.containers import Vertical, Horizontal
@@ -23,23 +23,16 @@ class _FilteredDirectoryTree(DirectoryTree):
                 if path.is_dir():
                     result.append(path)
 
-                filetype = mimetypes.guess_type(path)[0]
-                if not filetype:
-                    continue
-
-                if path.is_file() and (
-                    ("json" in filetype)
-                    or filetype
-                    in [
-                        "text/plain",
-                        "ASCII text",
-                    ]
-                ):
+                if path.is_file() and self.is_text_file(path):
                     result.append(path)
 
             except PermissionError:
                 continue
         return result
+
+    def is_text_file(self, path: str) -> bool:
+        """Use `file` shell command to identify binary file formats."""
+        return "text" in str(subprocess.check_output(["file", "-i", "-b", path]))
 
 
 class FileFinder(Widget):

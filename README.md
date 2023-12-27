@@ -2,6 +2,8 @@
 
 A log viewer built on [Textualize](https://www.textualize.io) with a file explorer, simple and regular expression searching, and JSON pretty-printing.
 
+Tested on Linux and macOS. (Relies on the `file` shell command to detect plausible text files.)
+
 Packaged with [Poetry](https://python-poetry.org).
 
 ```bash
