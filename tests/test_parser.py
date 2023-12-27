@@ -1,4 +1,5 @@
 """Testing the logfile Parser."""
+import json
 import pytest
 
 from pathmarks.parser.parser import Parser
@@ -59,11 +60,33 @@ class TestParser:
         # Exact match is found:
         assert "applesauce" in parser.filter_content_regex(".*applesauce*")
 
-        # # Match is case-insensitive:
+        # Match is case-insensitive:
         assert "applesauce" in parser.filter_content_regex(".*appleSAUCE*")
 
         # Lines not containing a match are not returned:
         assert "bleary" not in parser.filter_content_regex(".*applesauce*")
+
+    def test_json_single_line_content_is_prettified(self, single_line_json_content):
+        """Assert that single line JSON content will be expanded over mulitple lines"""
+
+        parser = Parser("no-file")
+        parser.raw_content = single_line_json_content
+        parser.append_maybe_json(single_line_json_content)
+
+        # The fixture is really giving us a single line:
+        assert "\n" not in single_line_json_content
+
+        # The list has multiple elements:
+        assert len(parser.content_lines) > 1
+
+        # The list should contain a specific string:
+        found = False
+        for line in parser.content_lines:
+            if "Leanne Graham" in line:
+                found = True
+                break
+
+        assert found
 
     @pytest.fixture
     def simple_text_file_content(self):
@@ -78,3 +101,35 @@ class TestParser:
         2. bleary Nuisance sawdust 99 nettles.
         3. cranberry applesauce leading _?! leastaways.
         """
+
+    @pytest.fixture
+    def single_line_json_content(self):
+        """Test data is from: jsonplaceholder.typicode.com/users."""
+        multiline_json = """
+        [
+          {
+            "id": 1,
+            "name": "Leanne Graham",
+            "username": "Bret",
+            "email": "Sincere@april.biz",
+            "address": {
+              "street": "Kulas Light",
+              "suite": "Apt. 556",
+              "city": "Gwenborough",
+              "zipcode": "92998-3874",
+              "geo": {
+                "lat": "-37.3159",
+                "lng": "81.1496"
+              }
+            },
+            "phone": "1-770-736-8031 x56442",
+            "website": "hildegard.org",
+            "company": {
+              "name": "Romaguera-Crona",
+              "catchPhrase": "Multi-layered client-server neural-net",
+              "bs": "harness real-time e-markets"
+            }
+          }
+        ]
+        """
+        return json.dumps(json.loads(multiline_json))

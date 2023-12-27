@@ -1,5 +1,6 @@
 """Log parsing support class."""
 import asyncio
+import json
 import re
 
 
@@ -32,17 +33,38 @@ class Parser:
             return "", ""
 
         try:
+            is_json = True
             with open(self.path, encoding="UTF-8") as f:
                 for line in f:
                     # allow animations by yeilding control during the loop:
                     await asyncio.sleep(0)
 
-                    self.content_lines.append(line)
+                    # if the line is JSON we want to pretty-print it:
+                    if is_json:
+                        is_json = self.append_maybe_json(line)
+                    else:
+                        is_json = False
+                        self.content_lines.append(line)
             self.raw_content = "".join(self.content_lines)
         except FileNotFoundError:
             err_msg = self.Messages["file_not_found"]
 
         return self.raw_content, err_msg
+
+    def append_maybe_json(self, line: str) -> bool:
+        """Attempt to add JSON to content_lines in a prettified way.
+        Return True if this was JSON, False otherwise."""
+        try:
+            json_line = json.loads(line)
+            json_lines = json.dumps(json_line, indent=4).splitlines()
+            for l in json_lines:
+                self.content_lines.append(l + "\n")
+
+            return True
+
+        except ValueError:
+            self.content_lines.append(line)
+            return False
 
     def prep_raw_content(self, s) -> str:
         """Add formatting and store metadata about content."""

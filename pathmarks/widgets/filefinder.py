@@ -23,11 +23,20 @@ class _FilteredDirectoryTree(DirectoryTree):
                 if path.is_dir():
                     result.append(path)
 
-                if path.is_file() and mimetypes.guess_type(path)[0] in [
-                    "text/plain",
-                    "ASCII text",
-                ]:
+                filetype = mimetypes.guess_type(path)[0]
+                if not filetype:
+                    continue
+
+                if path.is_file() and (
+                    ("json" in filetype)
+                    or filetype
+                    in [
+                        "text/plain",
+                        "ASCII text",
+                    ]
+                ):
                     result.append(path)
+
             except PermissionError:
                 continue
         return result
