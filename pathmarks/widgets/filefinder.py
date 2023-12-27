@@ -32,7 +32,7 @@ class _FilteredDirectoryTree(DirectoryTree):
 
     def is_text_file(self, path: str) -> bool:
         """Use `file` shell command to identify binary file formats."""
-        return "text" in str(subprocess.check_output(["file", "-i", "-b", path]))
+        return "text" in str(subprocess.check_output(["file", "--mime", "-b", path]))
 
 
 class FileFinder(Widget):
