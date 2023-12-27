@@ -17,13 +17,17 @@ class ViewPane(Widget):
     DEFAULT_CSS = """
     .vp_search_pattern_row {
         margin-top: 1;
-        height: 5;
+        height: 4;
     }
     #vp_search_pattern {
         width: 3fr;
     }
     #vp_search_type {
         width: 1fr;
+    }
+    #vp_log_view, .xvp_search_pattern_row {
+        border-top: solid gray;
+        background: rgb(30, 35, 40);
     }
     """
 
@@ -88,7 +92,7 @@ class ViewPane(Widget):
     def compose(self) -> ComposeResult:
         """Return the widgets that make up the ViewPane."""
 
-        self.rich_log = RichLog(id="log_view", highlight=True, markup=False)
+        self.rich_log = RichLog(id="vp_log_view", highlight=True, markup=False)
         self.loading_indicator = LoadingIndicator(id="loading_indicator")
         self.loading_indicator.display = False
 

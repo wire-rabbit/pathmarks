@@ -12,11 +12,13 @@ class PathmarksApp(App):
 
     DEFAULT_CSS = """
     .widget_filefinder {
-        width: 25%;
+        width: 1fr;
+        border: solid gray;
     }
 
     .widget_viewpane {
-        width: 75%;
+        width: 3fr;
+        border: solid gray;
     }
     """
 

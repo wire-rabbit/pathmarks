@@ -60,11 +60,15 @@ class FileFinder(Widget):
     }
 
     .ff_text_input {
-        width: 4fr;
+        width: 3fr;
     }
 
     .ff_button {
         width: 1fr;
+    }
+
+    #ff_tree {
+        border-top: solid gray;
     }
     """
 
@@ -114,7 +118,7 @@ class FileFinder(Widget):
                     id="path_input", placeholder="/var/log", classes="ff_text_input"
                 )
                 yield Button(
-                    ":mag:", id="go_btn", classes="ff_button", variant="primary"
+                    ":mag:", id="go_btn", classes="ff_button", variant="default"
                 )
             with Vertical():
                 yield _FilteredDirectoryTree("/", id="ff_tree")
